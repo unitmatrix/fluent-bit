@@ -282,20 +282,20 @@ select: SELECT keys FROM source window where groupby limit ';'
               }
       /* High-precedence operations like AND */
       condition:
-                and_condition AND or_condition
-                {
-                  $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
-                }
-                |
-                or_condition
+                 and_condition AND or_condition
+                 {
+                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
+                 }
+                 |
+                 or_condition
       /* Low-precedence operations like OR */
       or_condition:
-                or_condition OR basic_condition
-                {
-                  $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
-                }
-                |
-                basic_condition
+                 or_condition OR basic_condition
+                 {
+                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
+                 }
+                 |
+                 base_condition
       base_condition: comparison
                  |
                  key
