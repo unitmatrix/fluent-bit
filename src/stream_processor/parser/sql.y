@@ -1,4 +1,4 @@
-%name-prefix="flb_sp_"  // replace with %define api.prefix {flb_sp_}
+%name-prefix "flb_sp_"  // replace with %define api.prefix {flb_sp_}
 %define api.pure full
 %define parse.error verbose
 %parse-param { struct flb_sp_cmd *cmd };
@@ -98,6 +98,10 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <integer> aggregate_func
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
 
+/* Define operator precedence and associativity for logical operations in conditions */
+%right NOT // Highest precedence for NOT
+%left OR   // Lowest precedence for OR
+%left AND  // Middle precedence for AND
 
 %destructor { flb_free ($$); } IDENTIFIER
 
