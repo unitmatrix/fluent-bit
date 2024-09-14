@@ -98,11 +98,6 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <integer> aggregate_func
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
 
-/* Define operator precedence and associativity for logical operations in conditions */
-%right NOT // Highest precedence for NOT
-%left AND  // Middle precedence for AND
-%left OR   // Lowest precedence for OR
-
 %destructor { flb_free ($$); } IDENTIFIER
 
 %% /* rules section */
