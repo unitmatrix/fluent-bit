@@ -99,9 +99,9 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
 
 /* Define operator precedence and associativity for logical operations in conditions */
-/* %right NOT // Highest precedence for NOT */
-/* %left OR   // Lowest precedence for OR */
-/* %left AND  // Middle precedence for AND */
+%right NOT // Highest precedence for NOT
+%left OR   // Lowest precedence for OR
+%left AND  // Middle precedence for AND
 
 %destructor { flb_free ($$); } IDENTIFIER
 
