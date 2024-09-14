@@ -84,7 +84,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <string>     record_key
 %type <string>     prop_key
 %type <string>     prop_val
-%type <expression> condition and_condition base_condition
+%type <expression> condition condition1 condition2
 %type <expression> comparison
 %type <expression> key
 %type <expression> record_func
@@ -97,6 +97,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 
 %type <integer> aggregate_func
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
+
 
 %destructor { flb_free ($$); } IDENTIFIER
 
@@ -229,13 +230,12 @@ select: SELECT keys FROM source window where groupby limit ';'
              {
                  flb_sp_cmd_alias_add(cmd, $2);
              }
-      record_subkey: '[' STRING ']'
+      record_subkey: record_subkey record_subkey_index | record_subkey_index
+      record_subkey_index: '[' STRING ']'
              {
                flb_slist_add(cmd->tmp_subkeys, $2);
                flb_free($2);
              }
-             |
-             record_subkey record_subkey
       source: FROM_STREAM IDENTIFIER
               {
                 flb_sp_cmd_source(cmd, FLB_SP_STREAM, $2);
@@ -275,23 +275,19 @@ select: SELECT keys FROM source window where groupby limit ';'
               {
                 flb_sp_cmd_window(cmd, FLB_SP_WINDOW_HOPPING, $3, $4, $7, $8);
               }
-      /* Low-precedence operations like OR */
-      condition:
-                 condition OR and_condition
+      condition: condition OR condition1
                  {
-                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
+                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_OR);
                  }
                  |
-                 and_condition
-      /* High-precedence operations like AND */
-      and_condition:
-                 and_condition AND base_condition
-                 {
-                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
-                 }
-                 |
-                 base_condition
-      base_condition: comparison
+                 condition1
+      condition1: condition1 AND condition2
+                  {
+                    $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
+                  }
+                  |
+                  condition2
+      condition2: comparison
                  |
                  key
                  {
@@ -308,7 +304,7 @@ select: SELECT keys FROM source window where groupby limit ';'
                    $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_PAR);
                  }
                  |
-                 NOT base_condition
+                 NOT condition2
                  {
                    $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_NOT);
                  }
