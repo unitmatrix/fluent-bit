@@ -84,7 +84,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <string>     record_key
 %type <string>     prop_key
 %type <string>     prop_val
-%type <expression> condition
+%type <expression> condition and_condition or_condition
 %type <expression> comparison
 %type <expression> key
 %type <expression> record_func
@@ -97,11 +97,6 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 
 %type <integer> aggregate_func
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
-
-/* Define operator precedence and associativity for logical operations in conditions */
-%right NOT // Highest precedence for NOT
-%left AND  // Middle precedence for AND
-%left OR   // Lowest precedence for OR
 
 %destructor { flb_free ($$); } IDENTIFIER
 
@@ -280,7 +275,24 @@ select: SELECT keys FROM source window where groupby limit ';'
               {
                 flb_sp_cmd_window(cmd, FLB_SP_WINDOW_HOPPING, $3, $4, $7, $8);
               }
-      condition: comparison
+      /* High-precedence operations like NOT */
+      condition:
+                 NOT condition
+                 {
+                   $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_NOT);
+                 }
+                 |
+                 and_condition
+      /* Mid-precedence operations like AND */
+      and_condition:
+                or_condition
+                |
+                and_condition AND or_condition
+                {
+                  $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
+                }
+      /* Low-precedence operations like OR */
+      or_condition: comparison
                  |
                  key
                  {
@@ -295,16 +307,6 @@ select: SELECT keys FROM source window where groupby limit ';'
                  '(' condition ')'
                  {
                    $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_PAR);
-                 }
-                 |
-                 NOT condition
-                 {
-                   $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_NOT);
-                 }
-                 |
-                 condition AND condition
-                 {
-                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
                  }
                  |
                  condition OR condition
