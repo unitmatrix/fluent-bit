@@ -290,7 +290,7 @@ select: SELECT keys FROM source window where groupby limit ';'
                  or_condition
       /* Low-precedence operations like OR */
       or_condition:
-                 or_condition OR basic_condition
+                 or_condition OR base_condition
                  {
                    $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
                  }
