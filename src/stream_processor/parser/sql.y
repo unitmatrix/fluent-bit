@@ -84,7 +84,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <string>     record_key
 %type <string>     prop_key
 %type <string>     prop_val
-%type <expression> condition and_condition or_condition base_condition
+%type <expression> condition and_condition base_condition
 %type <expression> comparison
 %type <expression> key
 %type <expression> record_func
@@ -280,17 +280,17 @@ select: SELECT keys FROM source window where groupby limit ';'
               {
                 flb_sp_cmd_window(cmd, FLB_SP_WINDOW_HOPPING, $3, $4, $7, $8);
               }
-      /* High-precedence operations like AND */
+      /* Low-precedence operations like OR */
       condition:
-                 and_condition AND or_condition
+                 condition OR and_condition
                  {
                    $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
                  }
                  |
-                 or_condition
-      /* Low-precedence operations like OR */
-      or_condition:
-                 or_condition OR base_condition
+                 and_condition
+      /* High-precedence operations like AND */
+      and_condition:
+                 and_condition AND base_condition
                  {
                    $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
                  }
