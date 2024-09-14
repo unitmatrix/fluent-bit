@@ -31,7 +31,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 /* Known Tokens (refer to sql.l) */
 
 /* Keywords */
-%token IDENTIFIER QUOTE
+%token IDENTIFIER
 
 /* Basic keywords for statements */
 %token CREATE STREAM SNAPSHOT FLUSH WITH SELECT AS FROM FROM_STREAM FROM_TAG
