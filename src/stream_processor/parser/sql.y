@@ -84,7 +84,7 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <string>     record_key
 %type <string>     prop_key
 %type <string>     prop_val
-%type <expression> condition and_condition or_condition
+%type <expression> condition and_condition or_condition base_condition
 %type <expression> comparison
 %type <expression> key
 %type <expression> record_func
