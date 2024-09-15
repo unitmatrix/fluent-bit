@@ -181,6 +181,7 @@ RECORD_TIME             {yylval->integer = func_to_code(yytext, yyleng); return 
 ">"                     return GT;
 ">="                    return GTE;
 
+\'                      return QUOTE;
 \n
 [ \t]+			/* ignore whitespace */;
 
