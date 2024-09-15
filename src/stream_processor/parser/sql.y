@@ -98,11 +98,6 @@ void yyerror(struct flb_sp_cmd *cmd, const char *query, void *scanner, const cha
 %type <integer> aggregate_func
 %type <integer> COUNT AVG SUM MAX MIN TIMESERIES_FORECAST
 
-/* Define operator precedence and associativity for logical operations in conditions */
-%left OR   // Lowest precedence for OR
-%left AND  // Middle precedence for AND
-%right NOT // Highest precedence for NOT
-
 %destructor { flb_free ($$); } IDENTIFIER
 
 %% /* rules section */
@@ -297,9 +292,9 @@ select: SELECT keys FROM source window where groupby limit ';'
                    $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_PAR);
                  }
                  |
-                 NOT condition
+                 condition OR condition
                  {
-                   $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_NOT);
+                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_OR);
                  }
                  |
                  condition AND condition
@@ -307,9 +302,9 @@ select: SELECT keys FROM source window where groupby limit ';'
                    $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_AND);
                  }
                  |
-                 condition OR condition
+                 NOT condition
                  {
-                   $$ = flb_sp_cmd_operation(cmd, $1, $3, FLB_EXP_OR);
+                   $$ = flb_sp_cmd_operation(cmd, $2, NULL, FLB_EXP_NOT);
                  }
       comparison:
                   key IS null
